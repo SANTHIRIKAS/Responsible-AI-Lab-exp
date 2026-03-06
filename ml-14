@@ -1,0 +1,8 @@
+
+from lime.lime_tabular import LimeTabularExplainer
+
+lime_exp=LimeTabularExplainer{
+    X_train.values,features_names=list{X.column},class_names={"boolean","mailgnant"},mode="classification"
+}
+i=0
+exp=lime_exp.explain_instance(X_test.iloc(i).values,clf.predict_proba)
