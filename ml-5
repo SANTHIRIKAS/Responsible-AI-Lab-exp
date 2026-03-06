@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn import metrics
+
+df = pd.read_csv('credit data.csv')
+
+protected_attribute = 'sex'
+outcome = 'loan_status'
+
+# Features used for prediction
+features = ['age', 'income', 'zip_code'] 
+X = df[features]
+y = df[outcome]
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train the model
+model = LogisticRegression(random_state=42, max_iter=1000)
+model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# We can manually check performance metrics across groups in the test set
+test_results = pd.DataFrame({
+    'actual': y_test, 
+    'predicted': y_pred, 
+    protected_attribute: X_test[protected_attribute]
+})
+
+# Calculate approval rates for each sex group
+approval_rates = test_results.groupby(protected_attribute)['predicted'].mean() * 100
+print(f"\nApproval Rates:\n{approval_rates}")
+
+# Calculate error rates (e.g., false negative rate: denied loans when they should have been approved)
+def false_negative_rate(group):
+    # Actual=1 (should be approved), Predicted=0 (denied)
+    actual_pos = group['actual'] == 1
+    pred_neg = group['predicted'] == 0
+    fn = group[actual_pos & pred_neg].shape[0]
+    total_actual_pos = group[actual_pos].shape[0]
+    return (fn / total_actual_pos) if total_actual_pos > 0 else 0
+
+fnr_rates = test_results.groupby(protected_attribute).apply(false_negative_rate) * 100
+print(f"\nFalse Negative Rates (FNR):\n{fnr_rates}")
+
+# A significant difference in approval rates or FNR between groups is a major red flag.
+
