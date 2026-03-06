@@ -1,0 +1,21 @@
+import pandas as pd
+from aif360.datasets import StandardDataset
+from aif360.metrics import BinaryLabelDatasetMetric
+
+# Load a sample dataset (e.g., the Adult Census dataset often used for fairness analysis)
+# The AIF360 library provides built-in loaders for common fairness datasets
+dataset = StandardDataset(
+    df=pd.read_csv('adult.csv'),
+    label_name='income',
+    favorable_classes=['>50K', '>50K'],
+    protected_attribute_names=['sex'],
+    privileged_classes=[['Male']],
+    metadata={
+        'label_maps': [{1.0: '>50K', 0.0: '<=50K'}],
+        'protected attribute maps': [{1.0: 'Male', 0.0: 'Female'}]
+    }
+)
+
+print("Dataset loaded successfully!")
+print(f"Number of instances: {dataset.instance_names}")
+print(f"Feature names: {dataset.feature_names}")
